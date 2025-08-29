@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Gift, Kaiya</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html">❤ Happy Birthday, Kaiya</a>
+      <nav class="nav">
+        <a href="photos.html">Photos</a>
+        <a href="note.html">Note</a>
+        <a class="active gift-link" href="gift.html">The Gift</a>
+      </nav>
+    </header>
+
+    <main class="container gift">
+      <h1>The Big Gift</h1>
+      <p class="muted">Click the box to reveal your surprise.</p>
+
+      <div class="gift-stage">
+        <button id="revealBtn" class="gift-box" aria-label="Open your gift">
+          <img src="assets/img/gift-box.svg" alt="Gift box" />
+          <span class="gift-pulse"></span>
+        </button>
+
+        <div id="giftReveal" class="gift-reveal hidden">
+          <img id="giftImage" src="assets/gift/tickets.png" alt="Concert tickets" />
+          <p class="muted">If the image didn't load, put your file at <code>assets/gift/tickets.png</code>.</p>
+        </div>
+        <canvas id="confettiCanvas" class="confetti-canvas" width="1" height="1" aria-hidden="true"></canvas>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <small>Surprise! 🎉</small>
+    </footer>
+
+    <script src="assets/js/confetti.js"></script>
+    <script>
+      const btn = document.getElementById('revealBtn');
+      const reveal = document.getElementById('giftReveal');
+      const img = document.getElementById('giftImage');
+      const canvas = document.getElementById('confettiCanvas');
+
+      function showGift() {
+        btn.classList.add('hidden');
+        reveal.classList.remove('hidden');
+        try { startConfetti(canvas, { duration: 3500 }); } catch (e) {}
+      }
+
+      // Preload and then reveal
+      btn.addEventListener('click', () => {
+        const test = new Image();
+        test.onload = showGift;
+        test.onerror = showGift; // still reveal with placeholder/missing
+        test.src = img.src;
+      });
+    </script>
+  </body>
+  </html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kaiya’s Photos & Collage</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html">❤ Happy Birthday, Kaiya</a>
+      <nav class="nav">
+        <a class="active" href="photos.html">Photos</a>
+        <a href="note.html">Note</a>
+        <a class="gift-link" href="gift.html">The Gift</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section>
+        <h1>Our Photos</h1>
+        <p class="muted">Add your images in <code>assets/photos/</code> and list them in <code>assets/js/photos.js</code>.</p>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Collage</h2>
+          <div class="section-actions">
+            <button id="shuffleCollage" class="button button-secondary">Shuffle</button>
+            <button id="downloadCollage" class="button">Download</button>
+          </div>
+        </div>
+        <div id="collage" class="collage"></div>
+        <canvas id="collageCanvas" class="hidden" width="1200" height="800" aria-hidden="true"></canvas>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>Memories, arranged with love.</small>
+    </footer>
+
+    <script src="assets/js/photos.js"></script>
+    <script>
+      // Populate gallery
+      const galleryEl = document.getElementById('gallery');
+      const collageEl = document.getElementById('collage');
+      const collageCanvas = document.getElementById('collageCanvas');
+      const ctx = collageCanvas.getContext('2d');
+
+      function createImg(src) {
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = src;
+        img.onerror = () => { img.src = 'assets/img/photo-placeholder.svg'; };
+        img.alt = 'Photo';
+        return img;
+      }
+
+      function buildGallery() {
+        galleryEl.innerHTML = '';
+        (window.PHOTOS || []).forEach(src => {
+          const wrap = document.createElement('div');
+          wrap.className = 'gallery-item';
+          wrap.appendChild(createImg(src));
+          galleryEl.appendChild(wrap);
+        });
+        if ((window.PHOTOS || []).length === 0) {
+          // Show some placeholders if no photos yet
+          for (let i = 0; i < 9; i++) {
+            const wrap = document.createElement('div');
+            wrap.className = 'gallery-item placeholder';
+            const img = createImg('assets/img/photo-placeholder.svg');
+            wrap.appendChild(img);
+            galleryEl.appendChild(wrap);
+          }
+        }
+      }
+
+      function pickRandom(arr, n) {
+        const copy = arr.slice();
+        const out = [];
+        while (copy.length && out.length < n) {
+          const idx = Math.floor(Math.random() * copy.length);
+          out.push(copy.splice(idx, 1)[0]);
+        }
+        return out;
+      }
+
+      function buildCollage() {
+        collageEl.innerHTML = '';
+        const sources = (window.PHOTOS && window.PHOTOS.length ? window.PHOTOS : ['assets/img/photo-placeholder.svg']);
+        const picks = pickRandom(sources, Math.min(12, sources.length || 12));
+        const sizes = ['tile-s', 'tile-m', 'tile-l'];
+        picks.forEach(src => {
+          const d = document.createElement('div');
+          d.className = 'tile ' + sizes[Math.floor(Math.random()*sizes.length)];
+          d.style.rotate = ((Math.random() - 0.5) * 6).toFixed(2) + 'deg';
+          d.appendChild(createImg(src));
+          collageEl.appendChild(d);
+        });
+      }
+
+      async function downloadCollage() {
+        // Draw a simple canvas collage grid from currently displayed tiles
+        const tiles = Array.from(collageEl.querySelectorAll('img'));
+        const W = collageCanvas.width, H = collageCanvas.height;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,W,H);
+        const cols = 4, rows = 3;
+        const pad = 16;
+        const cellW = (W - pad*(cols+1)) / cols;
+        const cellH = (H - pad*(rows+1)) / rows;
+        for (let r=0, i=0; r<rows; r++) {
+          for (let c=0; c<cols; c++, i++) {
+            const x = pad + c*(cellW+pad);
+            const y = pad + r*(cellH+pad);
+            const img = tiles[i % tiles.length];
+            await new Promise(res => {
+              if (img.complete) return res();
+              img.onload = () => res();
+              img.onerror = () => res();
+            });
+            try { ctx.drawImage(img, x, y, cellW, cellH); } catch (e) {}
+          }
+        }
+        const url = collageCanvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'collage.png';
+        a.click();
+      }
+
+      document.getElementById('shuffleCollage').addEventListener('click', buildCollage);
+      document.getElementById('downloadCollage').addEventListener('click', downloadCollage);
+
+      buildGallery();
+      buildCollage();
+    </script>
+  </body>
+  </html>
