@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Your Gift, Kaiya</title>
+    <title>Your Surprise, Kaiya</title>
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
   <body>
@@ -12,13 +12,13 @@
       <nav class="nav">
         <a href="photos.html">Photos</a>
         <a href="note.html">Note</a>
-        <a class="active gift-link" href="gift.html">The Gift</a>
+        <a class="active gift-link" href="gift.html">Surprise</a>
       </nav>
     </header>
 
     <main class="container gift">
-      <h1>The Big Gift</h1>
-      <p class="muted">Click the box to reveal your surprise.</p>
+      <h1>I wonder what this could be?</h1>
+      <p class="muted">Click the box &gt;.&lt;</p>
 
       <div class="gift-stage">
         <button id="revealBtn" class="gift-box" aria-label="Open your gift">
@@ -28,14 +28,13 @@
 
         <div id="giftReveal" class="gift-reveal hidden">
           <img id="giftImage" src="assets/gift/tickets.png" alt="Concert tickets" />
-          <p class="muted">If the image didn't load, put your file at <code>assets/gift/tickets.png</code>.</p>
+          <p>We’re going to Holo Holo! I know you love your reggae, and I can’t wait to sing and dance with you there mai lob. I have never been to a reggae festival, so this should be quite interesting... I love you so much and I knew you enjoyed the reggae concert last time, so I just had to buy us tickets to go for the whole 2-day. :) Anyways stinky, you better start on that playlist!! Also.. HAPPY 23RD BIRTHDAY BABY GIRL!!! 😘</p>
         </div>
         <canvas id="confettiCanvas" class="confetti-canvas" width="1" height="1" aria-hidden="true"></canvas>
       </div>
     </main>
-
     <footer class="site-footer">
-      <small>Surprise! 🎉</small>
+      <small>Surprise unlocked. Hehe ilysmwaomh :o </small>
     </footer>
 
     <script src="assets/js/confetti.js"></script>
@@ -45,10 +44,44 @@
       const img = document.getElementById('giftImage');
       const canvas = document.getElementById('confettiCanvas');
 
+      // Surprise audio (plays on reveal)
+      let surpriseAudio;
+      function playSurpriseAudio() {
+        if (!surpriseAudio) {
+          surpriseAudio = new Audio('assets/music/reggae.mp4');
+          surpriseAudio.preload = 'auto';
+          surpriseAudio.addEventListener('ended', () => {
+            try { surpriseAudio.currentTime = 0; } catch (e) {}
+          });
+        }
+        surpriseAudio.play().catch(() => {});
+      }
+      function stopSurpriseAudio() {
+        if (surpriseAudio) {
+          try { surpriseAudio.pause(); surpriseAudio.currentTime = 0; } catch (e) {}
+        }
+      }
+
+      window.addEventListener('pagehide', stopSurpriseAudio);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') stopSurpriseAudio();
+      });
+
       function showGift() {
         btn.classList.add('hidden');
         reveal.classList.remove('hidden');
-        try { startConfetti(canvas, { duration: 3500 }); } catch (e) {}
+        // Confetti and cleanup so it doesn't cover text
+        const duration = 3500;
+        try { startConfetti(canvas, { duration }); } catch (e) {}
+        setTimeout(() => {
+          try {
+            const ctx2 = canvas.getContext('2d');
+            if (ctx2) ctx2.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+          } catch (e) {}
+        }, duration + 120);
+        // Audio
+        playSurpriseAudio();
       }
 
       // Preload and then reveal
