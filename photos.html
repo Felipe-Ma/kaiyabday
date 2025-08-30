@@ -18,8 +18,8 @@
 
     <main class="container">
       <section>
-        <h1>Our Photos</h1>
-        <p class="muted">Add your images in <code>assets/photos/</code> and list them in <code>assets/js/photos.js</code>.</p>
+        <h1>Our Photos & Videos</h1>
+        <p class="muted">Drop images and videos into <code>assets/photos_vids/</code>. The page auto-loads them. Videos loop automatically.</p>
         <div id="gallery" class="gallery" aria-live="polite"></div>
       </section>
 
@@ -40,6 +40,7 @@
       <small>Memories, arranged with love.</small>
     </footer>
 
+    <script src="assets/js/media.manifest.js"></script>
     <script src="assets/js/photos.js"></script>
     <script>
       // Populate gallery
@@ -57,16 +58,33 @@
         img.alt = 'Photo';
         return img;
       }
+      function createVideo(src) {
+        const vid = document.createElement('video');
+        vid.src = src;
+        vid.loop = true;
+        vid.autoplay = true;
+        vid.muted = true;
+        vid.playsInline = true;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('muted', '');
+        vid.onerror = () => {};
+        return vid;
+      }
 
       function buildGallery() {
         galleryEl.innerHTML = '';
-        (window.PHOTOS || []).forEach(src => {
+        const list = (window.MEDIA_LIST || window.PHOTOS || []);
+        list.forEach(src => {
           const wrap = document.createElement('div');
           wrap.className = 'gallery-item';
-          wrap.appendChild(createImg(src));
+          if (/\.(mp4|webm|ogg|mov|m4v)$/i.test(src)) {
+            wrap.appendChild(createVideo(src));
+          } else {
+            wrap.appendChild(createImg(src));
+          }
           galleryEl.appendChild(wrap);
         });
-        if ((window.PHOTOS || []).length === 0) {
+        if ((window.MEDIA_LIST || window.PHOTOS || []).length === 0) {
           // Show some placeholders if no photos yet
           for (let i = 0; i < 9; i++) {
             const wrap = document.createElement('div');
@@ -90,7 +108,7 @@
 
       function buildCollage() {
         collageEl.innerHTML = '';
-        const sources = (window.PHOTOS && window.PHOTOS.length ? window.PHOTOS : ['assets/img/photo-placeholder.svg']);
+        const sources = (window.MEDIA_IMAGES && window.MEDIA_IMAGES.length ? window.MEDIA_IMAGES : ['assets/img/photo-placeholder.svg']);
         const picks = pickRandom(sources, Math.min(12, sources.length || 12));
         const sizes = ['tile-s', 'tile-m', 'tile-l'];
         picks.forEach(src => {

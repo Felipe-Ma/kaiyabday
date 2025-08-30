@@ -1,11 +1,23 @@
-// List your photo paths here relative to project root.
-// Example: 'assets/photos/our-trip-1.jpg'
-// Put actual image files into assets/photos/
+// Media loader for photos.html
+// If a generated manifest (window.MEDIA) exists, use it.
+// Otherwise, fall back to window.PHOTOS (legacy manual list).
 
-window.PHOTOS = [
-  // Replace these examples with your real files
-  // 'assets/photos/photo1.jpg',
-  // 'assets/photos/photo2.jpg',
-  // 'assets/photos/photo3.jpg',
-];
+// Keep legacy variable defined for backwards compatibility
+window.PHOTOS = window.PHOTOS || [];
+
+(function initMedia() {
+  const isImage = (p) => /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(p);
+  const isVideo = (p) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(p);
+
+  // Choose source list
+  const list = Array.isArray(window.MEDIA) && window.MEDIA.length
+    ? window.MEDIA
+    : (Array.isArray(window.PHOTOS) ? window.PHOTOS : []);
+
+  // Expose derived lists globally for the page script
+  window.MEDIA_LIST = list;
+  window.MEDIA_IMAGES = list.filter(isImage);
+  window.MEDIA_VIDEOS = list.filter(isVideo);
+})();
+
 
